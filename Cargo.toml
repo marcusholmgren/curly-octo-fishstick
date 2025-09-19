@@ -1,0 +1,12 @@
+[package]
+name = "contacts-api"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+actix-web = "4"
+diesel = { version = "2.2.0", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }
+libsqlite3-sys = { version = "0.30", features = ["bundled"] }
+dotenvy = "0.15"
+serde = { version = "1", features = ["derive"] }
+diesel_migrations = "2"
