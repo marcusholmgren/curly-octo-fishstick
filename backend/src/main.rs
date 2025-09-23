@@ -1,20 +1,22 @@
-use actix_web::{App, HttpServer};
+use actix_web::{App, HttpServer, web};
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
-use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use dotenvy::dotenv;
 use std::env;
 
-pub mod schema;
 pub mod error;
-pub mod models;
 pub mod handlers;
+pub mod models;
+pub mod schema;
 
 use crate::error::ApiError;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
-fn run_migrations(conn: &mut impl MigrationHarness<diesel::sqlite::Sqlite>) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+fn run_migrations(
+    conn: &mut impl MigrationHarness<diesel::sqlite::Sqlite>,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
     conn.run_pending_migrations(MIGRATIONS)?;
     Ok(())
 }
@@ -32,12 +34,14 @@ async fn main() -> std::io::Result<()> {
     run_migrations(&mut conn).expect("Failed to run database migrations");
 
     HttpServer::new(move || {
-        App::new()
-            .service(handlers::create_contact)
-            .service(handlers::read_contacts)
-            .service(handlers::read_contact)
-            .service(handlers::update_contact)
-            .service(handlers::delete_contact)
+        App::new().service(
+            web::scope("/api")
+                .service(handlers::create_contact)
+                .service(handlers::read_contacts)
+                .service(handlers::read_contact)
+                .service(handlers::update_contact)
+                .service(handlers::delete_contact),
+        )
     })
     .bind(("127.0.0.1", 8080))?
     .run()
