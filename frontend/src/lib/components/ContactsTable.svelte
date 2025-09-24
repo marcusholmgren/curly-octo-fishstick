@@ -7,8 +7,9 @@
 // - /frontend/src/lib/components/ContactForm.svelte
 -->
 <script lang="ts">
-	import { ElDialog, ElDialogPanel } from '@tailwindplus/elements';
-	import { base } from '$app/paths';
+	import '@tailwindplus/elements';
+	import { resolve } from '$app/paths';
+	import { onMount } from 'svelte';
 
 	interface Contact {
 		id: number;
@@ -22,7 +23,7 @@
 
 	async function getContacts() {
 		try {
-			const response = await fetch(`${base}/api/contacts`);
+			const response = await fetch('/api/contacts');
 			if (response.ok) {
 				contacts = await response.json();
 			} else {
@@ -33,7 +34,9 @@
 		}
 	}
 
-	getContacts();
+	onMount(() => {
+		getContacts();
+	});
 </script>
 
 <div class="px-4 sm:px-6 lg:px-8">
@@ -46,7 +49,7 @@
 		</div>
 		<div class="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
 			<a
-				href="{base}/contacts/new"
+				href={resolve('/contacts/new')}
 				class="block rounded-md bg-indigo-600 px-3 py-2 text-center text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 dark:bg-indigo-500 dark:hover:bg-indigo-400 dark:focus-visible:outline-indigo-500"
 			>
 				Add contact
@@ -124,7 +127,7 @@
 									class="border-b border-gray-200 py-4 pr-4 pl-3 text-right text-sm font-medium whitespace-nowrap sm:pr-8 lg:pr-8 dark:border-white/10 dark:bg-gray-900"
 								>
 									<a
-										href="{base}/contacts/{contact.id}/edit"
+										href="/contacts/{contact.id}/edit"
 										class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
 										>Edit<span class="sr-only">, {contact.first_name} {contact.last_name}</span></a
 									>
@@ -137,7 +140,8 @@
 										commandfor="delete-contact-{contact.id}"
 										type="button"
 										class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
-										>Delete<span class="sr-only">, {contact.first_name} {contact.last_name}</span></button
+										>Delete<span class="sr-only">, {contact.first_name} {contact.last_name}</span
+										></button
 									>
 								</td>
 							</tr>
@@ -158,7 +162,7 @@
 										<button
 											type="submit"
 											on:click={async () => {
-												const response = await fetch(`${base}/api/contacts/${contact.id}`, {
+												const response = await fetch(`/api/contacts/${contact.id}`, {
 													method: 'DELETE'
 												});
 												if (response.ok) {
