@@ -4,6 +4,11 @@ Rust HTTP Server and API for managing contacts
 
 ## Database migrations
 
+Install with cargo binstall Diesel CLI
+```bash
+cargo binstall diesel_cli
+```
+
 Using Diesel CLI
 
 ```bash
