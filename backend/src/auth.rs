@@ -69,7 +69,7 @@ pub struct Jwks {
 // --- User claims extracted from the JWT ---
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
-    pub sub: String,
+    pub sub: Option<String>,
     pub preferred_username: String,
     pub email: Option<String>,
     pub aud: String, // Audience
@@ -106,63 +106,72 @@ impl TokenValidator {
 
     async fn get_well_known_config(&self) -> Result<OidcConfig, AuthError> {
         // Check read-only cache first
-        if let Some((config, timestamp)) = &self.cache.read().await.well_known_config {
+        let cached_config = self.cache.read().await.well_known_config.clone();
+        if let Some((config, timestamp)) = cached_config {
             if timestamp.elapsed() < self.cache_ttl {
-                return Ok(config.clone());
+                return Ok(config);
             }
         }
 
-        // Acquire write lock to update
-        let mut cache = self.cache.write().await;
-        // Double-check in case another thread updated while we waited for the lock
-        if let Some((config, timestamp)) = &cache.well_known_config {
-            if timestamp.elapsed() < self.cache_ttl {
-                return Ok(config.clone());
-            }
-        }
-
+        // If not in cache or expired, fetch
         log::info!("Fetching new OIDC well-known configuration...");
         let url = format!("{}/.well-known/openid-configuration", self.idp_url);
         let config: OidcConfig = self.client.get(&url).send().await?.json().await?;
+
+        // Acquire write lock to update cache
+        let mut cache = self.cache.write().await;
         cache.well_known_config = Some((config.clone(), Instant::now()));
+
         Ok(config)
     }
 
     async fn get_jwks(&self) -> Result<Jwks, AuthError> {
         // Check read-only cache first
-        if let Some((jwks, timestamp)) = &self.cache.read().await.jwks {
+        let cached_jwks = self.cache.read().await.jwks.clone();
+        if let Some((jwks, timestamp)) = cached_jwks {
             if timestamp.elapsed() < self.cache_ttl {
-                return Ok(jwks.clone());
+                return Ok(jwks);
             }
         }
 
-        // Acquire write lock to update
-        let mut cache = self.cache.write().await;
-        // Double-check
-        if let Some((jwks, timestamp)) = &cache.jwks {
-            if timestamp.elapsed() < self.cache_ttl {
-                return Ok(jwks.clone());
-            }
-        }
-
-        log::info!("Fetching new JWKS...");
+        // If not in cache or expired, fetch config
         let config = self.get_well_known_config().await?;
-        let jwks: Jwks = self.client.get(&config.jwks_uri).send().await?.json().await?;
+
+        // Now fetch JWKS
+        log::info!("Fetching new JWKS...");
+        let jwks: Jwks = self
+            .client
+            .get(&config.jwks_uri)
+            .send()
+            .await?
+            .json()
+            .await?;
+
+        // Acquire write lock to update cache
+        let mut cache = self.cache.write().await;
         cache.jwks = Some((jwks.clone(), Instant::now()));
+
         Ok(jwks)
     }
 
     async fn get_decoding_key(&self, kid: &str) -> Result<DecodingKey, AuthError> {
         let jwks = self.get_jwks().await?;
-        let jwk = jwks.keys.iter().find(|key| key.kid == kid).ok_or_else(|| AuthError::KeyNotFound(kid.to_string()))?;
+        let jwk = jwks
+            .keys
+            .iter()
+            .find(|key| key.kid == kid)
+            .ok_or_else(|| AuthError::KeyNotFound(kid.to_string()))?;
 
         // Construct the RSA DecodingKey from the public key components (n, e)
-        DecodingKey::from_rsa_components(&jwk.n, &jwk.e).map_err(|_| AuthError::KeyConstructionError)
+        DecodingKey::from_rsa_components(&jwk.n, &jwk.e)
+            .map_err(|_| AuthError::KeyConstructionError)
     }
 
     pub async fn decode_token(&self, token: &str) -> Result<Claims, AuthError> {
         let header = decode_header(token)?;
-        let kid = header.kid.ok_or_else(|| AuthError::KeyNotFound("No KID in header".to_string()))?;
+        let kid = header
+            .kid
+            .ok_or_else(|| AuthError::KeyNotFound("No KID in header".to_string()))?;
 
         let decoding_key = self.get_decoding_key(&kid).await?;
 
@@ -197,10 +206,10 @@ impl FromRequest for Claims {
                 .and_then(|s| s.strip_prefix("Bearer "))
                 .ok_or(AuthError::MissingToken)?;
 
-            validator
-                .decode_token(token)
-                .await
-                .map_err(|e| e.into())
+            validator.decode_token(token).await.map_err(|e| {
+                log::error!("Token validation error: {:?}", e);
+                e.into()
+            })
         })
     }
 }

@@ -73,7 +73,7 @@ async fn main() -> std::io::Result<()> {
                     .service(handlers::delete_contact),
             )
     })
-    .bind(("127.0.0.1", 8080))?
+    .bind(("127.0.0.1", 8081))?
     .run()
     .await
 }

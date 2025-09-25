@@ -7,8 +7,10 @@
       "username": "testuser",
       "enabled": true,
       "emailVerified": true,
+      "email": "testuser@example.com",
       "firstName": "Test",
       "lastName": "User",
+      "requiredActions": [],
       "credentials": [
         {
           "type": "password",
@@ -23,14 +25,38 @@
       "clientId": "contacts-app-client",
       "name": "Contacts App Client",
       "enabled": true,
-      "clientAuthenticatorType": "client-secret",
+      "clientAuthenticatorType": "none",
       "redirectUris": ["http://localhost:3000/*", "http://localhost:5173/"],
       "webOrigins": ["http://localhost:3000", "http://localhost:5173"],
       "protocol": "openid-connect",
       "publicClient": true,
+      "protocolMappers": [
+        {
+          "name": "audience-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "included.client.audience": "contacts-api-client"
+          }
+        },
+        {
+          "name": "subject-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-subject-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ],
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": false,
+      "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": false,
       "authorizationServicesEnabled": false,
       "defaultClientScopes": ["web-origins", "profile", "email", "roles"]

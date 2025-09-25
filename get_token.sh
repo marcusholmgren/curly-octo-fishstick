@@ -1,15 +1,8 @@
-# curly-octo-fishstick
-
-
-
-Get a token from your IDP
-```bash
+#!/bin/bash
 curl --location 'http://localhost:8080/realms/contacts/protocol/openid-connect/token' \
 --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode 'client_id=contacts-app-client' \
 --data-urlencode 'username=testuser' \
 --data-urlencode 'password=testpassword' \
---data-urlencode 'grant_type=password'
-```
-
-Response: {"error":"invalid_client","error_description":"Invalid client or Invalid client credentials"}curl: (3) URL rejected: Bad hostname
+--data-urlencode 'grant_type=password' \
+--data-urlencode 'scope=openid email profile roles'
