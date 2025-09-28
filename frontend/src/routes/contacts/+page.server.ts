@@ -1,8 +1,9 @@
+import { CONTACTS_API } from '$env/static/private';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const session = await locals.auth();
-	const response = await fetch('http://localhost:8000/contacts', {
+	const response = await fetch(`${CONTACTS_API}/contacts`, {
 		headers: {
 			Authorization: `Bearer ${session?.accessToken}`
 		}

@@ -9,6 +9,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
+	import { page } from '$app/stores';
 
 	export let contact: {
 		id?: number;
@@ -33,16 +34,23 @@
 		const url = contact.id ? `${base}/api/contacts/${contact.id}` : `${base}/api/contacts`;
 
 		try {
+			const session = $page.data.session;
+			if (!session?.accessToken) {
+				console.error('No access token found');
+				return;
+			}
+
 			const response = await fetch(url, {
 				method: method,
 				headers: {
-					'Content-Type': 'application/json'
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${session.accessToken}`
 				},
 				body: JSON.stringify(formValues)
 			});
 
 			if (response.ok) {
-				goto(`${base}/`);
+				goto(`${base}/contacts`);
 			} else {
 				console.error('Failed to save contact', response.status, response.statusText);
 			}

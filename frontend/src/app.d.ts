@@ -1,15 +1,22 @@
-import type { CustomSession } from '$lib/types';
+import type { Session } from '@auth/core/types';
 
 declare global {
 	namespace App {
 		// interface Error {}
 		interface Locals {
-			auth: () => Promise<CustomSession | null>;
+			auth: () => Promise<Session | null>;
 		}
 		interface PageData {
-			session: CustomSession | null;
+			session: Session | null;
 		}
 		// interface Platform {}
+	}
+}
+
+declare module '@auth/core/types' {
+	interface Session {
+		accessToken?: string;
+		error?: string;
 	}
 }
 
