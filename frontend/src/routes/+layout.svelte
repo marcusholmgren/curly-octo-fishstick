@@ -489,7 +489,7 @@
 							/>
 							<span class="sr-only">Your profile</span>
 							<span aria-hidden="true">{$page.data.session.user.name}</span>
-							<form action="/signout" method="POST">
+							<form action="/auth/signout" method="POST">
 								<input type="hidden" name="callbackUrl" value="/" />
 								<button
 									class="rounded-md bg-indigo-600 px-3 py-1.5 text-sm leading-6 font-semibold text-white shadow-sm hover:bg-indigo-500"

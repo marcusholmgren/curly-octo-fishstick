@@ -1,9 +1,9 @@
 # Stage 1: Build & cache dependencies
-FROM rust:1.79 as builder
+FROM rust:bullseye as builder
 WORKDIR /usr/src/app
 
-# Install any build dependencies
-# RUN apt-get update && apt-get install -y libsqlite3-dev
+# Install diesel_cli
+RUN cargo install diesel_cli --no-default-features --features sqlite
 
 # Only copy files required for dependencies
 COPY Cargo.toml Cargo.lock ./
@@ -14,6 +14,8 @@ RUN cargo build --release
 
 # Copy the actual source code
 COPY ./src ./src
+COPY migrations ./migrations
+COPY diesel.toml .
 
 # Build the application
 RUN rm -f target/release/deps/contacts_api*
@@ -26,9 +28,14 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 
 WORKDIR /app
 
-# Copy the compiled application from the builder stage
+# Copy the compiled application and diesel CLI from the builder stage
 COPY --from=builder /usr/src/app/target/release/contacts-api .
+COPY --from=builder /usr/local/cargo/bin/diesel /usr/local/bin/
+
+# Copy and set up the entrypoint script
+COPY entrypoint.sh .
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8081
 
-CMD ["./contacts-api"]
+CMD ["./entrypoint.sh"]

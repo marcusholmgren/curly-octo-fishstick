@@ -5,7 +5,7 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin_password
       KC_DB: dev-file
-      KC_HOSTNAME: localhost
+      KC_HOSTNAME: localhost # use "keycloak" in Docker Compose
       KC_HTTP_PORT: 8080
       KC_HOSTNAME_STRICT: "false"
     ports:
@@ -26,7 +26,7 @@ services:
       - IDP_URL=${IDP_URL}
       - IDP_AUDIENCE=${IDP_AUDIENCE}
     volumes:
-      - ./data:/data
+      - backend-data:/data
     depends_on:
       - keycloak
 
@@ -42,7 +42,12 @@ services:
       - AUTH_KEYCLOAK_ISSUER=${AUTH_KEYCLOAK_ISSUER}
       - AUTH_TRUST_HOST=${AUTH_TRUST_HOST}
       - CONTACTS_API=${CONTACTS_API}
-      - NODE_ENV=production
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_ORIGIN=${AUTH_ORIGIN}
+      - NODE_ENV=development
     depends_on:
       - backend
       - keycloak
+
+volumes:
+  backend-data:
