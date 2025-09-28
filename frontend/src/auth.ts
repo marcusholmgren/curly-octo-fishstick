@@ -5,7 +5,7 @@ import {
 	AUTH_KEYCLOAK_ISSUER,
 	AUTH_KEYCLOAK_SECRET,
 	AUTH_SECRET
-} from '$env/dynamic/private';
+} from '$env/static/private';
 
 async function refreshAccessToken(token) {
     try {
@@ -53,6 +53,7 @@ export const { handle, signIn, signOut } = SvelteKitAuth({
 		})
 	],
 	secret: AUTH_SECRET,
+	useSecureCookies: false,
 	trustHost: true,
 	callbacks: {
 		async jwt({ token, account }) {

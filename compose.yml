@@ -1,17 +1,53 @@
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:latest # Use a specific version for production
+    image: quay.io/keycloak/keycloak:latest
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
-      KC_BOOTSTRAP_ADMIN_PASSWORD: admin_password # Change this in production!
-      KC_DB: dev-file # Use PostgreSQL/MySQL/MariaDB in production, along with volumes.
-      KC_HOSTNAME: localhost
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin_password
+      KC_DB: dev-file
+      KC_HOSTNAME: localhost # use "keycloak" in Docker Compose
       KC_HTTP_PORT: 8080
-      KC_HOSTNAME_STRICT: "false" # Set to true in a production, reverse-proxy setup.
+      KC_HOSTNAME_STRICT: "false"
     ports:
       - "8080:8080"
     volumes:
-      - ./keycloak-realm-config:/opt/keycloak/data/import # Mount the import directory
+      - ./keycloak-realm-config:/opt/keycloak/data/import
     command:
       - start-dev
-      - --import-realm # Import the realm on startup
+      - --import-realm
+
+  backend:
+    build:
+      context: ./backend
+    ports:
+      - "8081:8081"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - IDP_URL=${IDP_URL}
+      - IDP_AUDIENCE=${IDP_AUDIENCE}
+    volumes:
+      - backend-data:/data
+    depends_on:
+      - keycloak
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - AUTH_SECRET=${AUTH_SECRET}
+      - AUTH_KEYCLOAK_SECRET=${AUTH_KEYCLOAK_SECRET}
+      - AUTH_KEYCLOAK_ID=${AUTH_KEYCLOAK_ID}
+      - AUTH_KEYCLOAK_ISSUER=${AUTH_KEYCLOAK_ISSUER}
+      - AUTH_TRUST_HOST=${AUTH_TRUST_HOST}
+      - CONTACTS_API=${CONTACTS_API}
+      - AUTH_URL=${AUTH_URL}
+      - AUTH_ORIGIN=${AUTH_ORIGIN}
+      - NODE_ENV=development
+    depends_on:
+      - backend
+      - keycloak
+
+volumes:
+  backend-data:
