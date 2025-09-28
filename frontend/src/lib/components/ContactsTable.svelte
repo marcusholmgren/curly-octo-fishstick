@@ -10,6 +10,7 @@
 	import '@tailwindplus/elements';
 	import { resolve } from '$app/paths';
 	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 
 	interface Contact {
 		id: number;
@@ -23,7 +24,16 @@
 
 	async function getContacts() {
 		try {
-			const response = await fetch('/api/contacts');
+			const session = $page.data.session;
+			if (!session?.accessToken) {
+				console.error('No access token found');
+				return;
+			}
+			const response = await fetch('/api/contacts', {
+				headers: {
+					Authorization: `Bearer ${session.accessToken}`
+				}
+			});
 			if (response.ok) {
 				contacts = await response.json();
 			} else {
@@ -161,16 +171,23 @@
 										>
 										<button
 											type="submit"
-											on:click={async () => {
-												const response = await fetch(`/api/contacts/${contact.id}`, {
-													method: 'DELETE'
-												});
-												if (response.ok) {
-													getContacts();
-												}
-											}}>Delete</button
-										>
-									</div>
+											                                            on:click={async () => {
+											                                                const session = $page.data.session;
+											                                                if (!session?.accessToken) {
+											                                                    console.error('No access token found');
+											                                                    return;
+											                                                }
+											                                                const response = await fetch(`/api/contacts/${contact.id}`, {
+											                                                    method: 'DELETE',
+											                                                    headers: {
+											                                                        Authorization: `Bearer ${session.accessToken}`
+											                                                    }
+											                                                });
+											                                                if (response.ok) {
+											                                                    getContacts();
+											                                                }
+											                                            }}>Delete</button
+											                                        >									</div>
 								</form>
 							</el-dialog-panel>
 						</dialog>

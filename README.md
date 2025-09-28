@@ -1,5 +1,7 @@
 # curly-octo-fishstick
 
+Application with a backend API for storing contacts and a frontend for managing contacts.
+Users must login to access the application.
 
 
 Get a token from your IDP
@@ -11,5 +13,3 @@ curl --location 'http://localhost:8080/realms/contacts/protocol/openid-connect/t
 --data-urlencode 'password=testpassword' \
 --data-urlencode 'grant_type=password'
 ```
-
-Response: {"error":"invalid_client","error_description":"Invalid client or Invalid client credentials"}curl: (3) URL rejected: Bad hostname

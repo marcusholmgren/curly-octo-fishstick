@@ -2,8 +2,16 @@
 	import '../app.css';
 	import '@tailwindplus/elements';
 	import favicon from '$lib/assets/favicon.svg';
+	import { page } from '$app/stores';
+	import { signIn } from '@auth/sveltekit/client';
 
 	let { children } = $props();
+
+	$effect(() => {
+		if ($page.data.session?.error === 'RefreshAccessTokenError') {
+			signIn('keycloak');
+		}
+	});
 </script>
 
 <svelte:head>
@@ -85,7 +93,7 @@
 									</li>
 									<li>
 										<a
-											href="#"
+											href="/contacts"
 											class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
 										>
 											<svg
@@ -305,7 +313,7 @@
 								</li>
 								<li>
 									<a
-										href="#"
+										href="/contacts"
 										class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-700 hover:bg-gray-50 hover:text-indigo-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
 									>
 										<svg
@@ -470,18 +478,26 @@
 					</ul>
 				</li>
 				<li class="-mx-6 mt-auto">
-					<a
-						href="#"
+					<div
 						class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5"
 					>
-						<img
-							src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-							alt=""
-							class="size-8 rounded-full bg-gray-50 outline -outline-offset-1 outline-black/5 dark:bg-gray-800 dark:outline-white/10"
-						/>
-						<span class="sr-only">Your profile</span>
-						<span aria-hidden="true">Tom Cook</span>
-					</a>
+						{#if $page.data.session?.user}
+							<img
+								src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+								alt=""
+								class="size-8 rounded-full bg-gray-50 outline -outline-offset-1 outline-black/5 dark:bg-gray-800 dark:outline-white/10"
+							/>
+							<span class="sr-only">Your profile</span>
+							<span aria-hidden="true">{$page.data.session.user.name}</span>
+							<form action="/signout" method="POST">
+								<input type="hidden" name="callbackUrl" value="/" />
+								<button
+									class="rounded-md bg-indigo-600 px-3 py-1.5 text-sm leading-6 font-semibold text-white shadow-sm hover:bg-indigo-500"
+									>Sign out</button
+								>
+							</form>
+						{/if}
+					</div>
 				</li>
 			</ul>
 		</nav>

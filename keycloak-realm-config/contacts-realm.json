@@ -25,11 +25,12 @@
       "clientId": "contacts-app-client",
       "name": "Contacts App Client",
       "enabled": true,
-      "clientAuthenticatorType": "none",
-      "redirectUris": ["http://localhost:3000/*", "http://localhost:5173/"],
+      "clientAuthenticatorType": "client-secret",
+      "secret": "frontend-secret",
+      "redirectUris": ["http://localhost:3000/*", "http://localhost:5173/*"],
       "webOrigins": ["http://localhost:3000", "http://localhost:5173"],
       "protocol": "openid-connect",
-      "publicClient": true,
+      "publicClient": false,
       "protocolMappers": [
         {
           "name": "audience-mapper",

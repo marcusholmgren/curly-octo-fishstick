@@ -38,6 +38,7 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"@auth/sveltekit": "^1.10.0",
 		"@tailwindplus/elements": "^1.0.13"
 	}
 }

@@ -5,11 +5,30 @@
 // - /frontend/src/routes/contacts/[id]/edit/+page.svelte
 import type { PageLoad } from './$types';
 
-export const load: PageLoad = async ({ params, fetch }) => {
+export const load: PageLoad = async ({ params, fetch, parent }) => {
 	const { id } = params;
-	const response = await fetch(`/api/contacts/${id}`);
-	const contact = await response.json();
+	const { session } = await parent();
+
+	if (!session?.accessToken) {
+		// Or redirect to login
+		return { contact: null };
+	}
+
+	const response = await fetch(`/api/contacts/${id}`, {
+		headers: {
+			Authorization: `Bearer ${session.accessToken}`
+		}
+	});
+
+	if (response.ok) {
+		const contact = await response.json();
+		return {
+			contact
+		};
+	}
+
+	// Handle error case
 	return {
-		contact
+		contact: null
 	};
 };
