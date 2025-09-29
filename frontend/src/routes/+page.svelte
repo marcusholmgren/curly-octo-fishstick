@@ -1,3 +1,10 @@
+<!--
+// frontend/src/routes/+page.svelte
+// This is the main landing page of the application.
+// It displays a welcome message and a sign-in button for unauthenticated users,
+// or a welcome message and a link to the contacts page for authenticated users.
+// RELEVANT FILES: frontend/src/routes/+layout.svelte, frontend/src/routes/signin/+page.svelte
+-->
 <script lang="ts">
 	import { page } from '$app/stores';
 </script>
@@ -17,5 +24,10 @@
 		>
 	</div>
 {:else}
-	<p>Welcome, {$page.data.session.user.name}. View your <a href="/contacts" class="text-indigo-600 hover:underline">contacts</a>.</p>
+	<p>
+		Welcome, {$page.data.session.user.name}. View your <a
+			href="/contacts"
+			class="text-indigo-600 hover:underline">contacts</a
+		>.
+	</p>
 {/if}

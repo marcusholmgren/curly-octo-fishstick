@@ -1,10 +1,8 @@
 <!--
-// /frontend/src/routes/contacts/[id]/edit/+page.svelte
-// This file contains the page for editing an existing contact.
-// This file exists to provide a page for editing an existing contact.
-// RELEVANT FILES:
-// - /frontend/src/lib/components/ContactForm.svelte
-// - /frontend/src/routes/contacts/[id]/edit/+page.ts
+// frontend/src/routes/contacts/[id]/edit/+page.svelte
+// This page provides the user interface for editing an existing contact.
+// It receives the contact data from the `load` function and passes it to the reusable ContactForm component.
+// RELEVANT FILES: frontend/src/routes/contacts/[id]/edit/+page.ts, frontend/src/lib/components/ContactForm.svelte
 -->
 <script lang="ts">
 	import ContactForm from '$lib/components/ContactForm.svelte';

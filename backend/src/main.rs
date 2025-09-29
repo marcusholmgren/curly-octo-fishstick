@@ -1,3 +1,8 @@
+// backend/src/main.rs
+// This file is the main entry point for the backend server.
+// It sets up the database, runs migrations, and starts the HTTP server.
+// RELEVANT FILES: backend/src/handlers.rs, backend/src/auth.rs, backend/src/error.rs
+
 use actix_web::{web, App, HttpServer};
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
@@ -16,6 +21,16 @@ use crate::error::ApiError;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
+/// Runs pending database migrations.
+///
+/// # Arguments
+///
+/// * `conn` - A mutable reference to a type that implements `MigrationHarness`.
+///
+/// # Returns
+///
+/// * `Ok(())` if the migrations were successful.
+/// * `Err` with a boxed error if the migrations failed.
 fn run_migrations(
     conn: &mut impl MigrationHarness<diesel::sqlite::Sqlite>,
 ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
@@ -23,7 +38,14 @@ fn run_migrations(
     Ok(())
 }
 
-// Helper function to establish a database connection
+/// Establishes a connection to the SQLite database.
+///
+/// It reads the `DATABASE_URL` from the environment variables (e.g., from a `.env` file).
+///
+/// # Returns
+///
+/// * `Ok(SqliteConnection)` if the connection is successful.
+/// * `Err(ApiError)` if the connection fails.
 fn establish_connection() -> Result<SqliteConnection, ApiError> {
     dotenv().ok();
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
@@ -32,6 +54,19 @@ fn establish_connection() -> Result<SqliteConnection, ApiError> {
 
 use actix_cors::Cors;
 
+/// The main entry point for the Actix web server.
+///
+/// This function performs the following steps:
+/// 1. Establishes a database connection.
+/// 2. Runs any pending database migrations.
+/// 3. Initializes the logger.
+/// 4. Reads Identity Provider (IDP) configuration from environment variables.
+/// 5. Creates a `TokenValidator` for authenticating requests.
+/// 6. Configures and starts the HTTP server with CORS, logging, and API routes.
+///
+/// # Returns
+///
+/// * `std::io::Result<()>` which indicates if the server started successfully or not.
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     let mut conn = establish_connection().expect("Failed to connect to database");
