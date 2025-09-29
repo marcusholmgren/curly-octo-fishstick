@@ -1,16 +1,18 @@
 <!--
-// /frontend/src/lib/components/ContactForm.svelte
-// This file contains the contact form component.
-// This file exists to provide a reusable form for adding and editing contacts.
-// RELEVANT FILES:
-// - /frontend/src/routes/contacts/new/+page.svelte
-// - /frontend/src/routes/contacts/[id]/edit/+page.svelte
+// frontend/src/lib/components/ContactForm.svelte
+// This component provides a reusable form for creating and editing contacts.
+// It handles form submission, API requests, and redirection.
+// RELEVANT FILES: /frontend/src/routes/contacts/new/+page.svelte, /frontend/src/routes/contacts/[id]/edit/+page.svelte
 -->
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { base } from '$app/paths';
 	import { page } from '$app/stores';
 
+	/**
+	 * The contact object to be edited or a default object for a new contact.
+	 * @type {{id?: number, first_name: string, last_name: string, email: string, phone_number: string}}
+	 */
 	export let contact: {
 		id?: number;
 		first_name: string;
@@ -24,8 +26,19 @@
 		phone_number: ''
 	};
 
+	/**
+	 * The HTTP method to use for the form submission.
+	 * 'POST' for creating a new contact, 'PUT' for updating an existing one.
+	 * @type {'POST' | 'PUT'}
+	 */
 	export let method: 'POST' | 'PUT' = 'POST';
 
+	/**
+	 * Handles the form submission.
+	 * It sends the contact data to the appropriate API endpoint based on the method
+	 * and the presence of a contact ID. Redirects to the contacts list on success.
+	 * @param {Event} event - The form submission event.
+	 */
 	async function handleSubmit(event: Event) {
 		const target = event.target as HTMLFormElement;
 		const formData = new FormData(target);

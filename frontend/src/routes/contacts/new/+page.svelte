@@ -1,9 +1,8 @@
 <!--
-// /frontend/src/routes/contacts/new/+page.svelte
-// This file contains the page for adding a new contact.
-// This file exists to provide a page for adding a new contact.
-// RELEVANT FILES:
-// - /frontend/src/lib/components/ContactForm.svelte
+// frontend/src/routes/contacts/new/+page.svelte
+// This page provides the user interface for adding a new contact.
+// It uses the reusable ContactForm component to render the form fields.
+// RELEVANT FILES: frontend/src/lib/components/ContactForm.svelte
 -->
 <script lang="ts">
 	import ContactForm from '$lib/components/ContactForm.svelte';

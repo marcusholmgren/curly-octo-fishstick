@@ -1,3 +1,8 @@
+// backend/src/handlers.rs
+// This file contains the HTTP handlers for the API endpoints.
+// It defines the logic for creating, reading, updating, and deleting contacts.
+// RELEVANT FILES: backend/src/main.rs, backend/src/models.rs, backend/src/error.rs
+
 use crate::auth::Claims;
 use crate::error::ApiError;
 use crate::establish_connection;
@@ -5,7 +10,19 @@ use crate::models::{Contact, NewContact};
 use actix_web::{delete, get, post, put, web, HttpResponse};
 use diesel::prelude::*;
 
-// Create a new contact
+/// Handles the creation of a new contact.
+///
+/// This endpoint is protected and requires a valid JWT.
+///
+/// # Arguments
+///
+/// * `_claims` - The claims extracted from the JWT, used for authentication.
+/// * `contact` - The new contact data from the request body.
+///
+/// # Returns
+///
+/// * `Ok(HttpResponse)` with a success message if the contact is created.
+/// * `Err(ApiError)` if there is a database error.
 #[post("/contacts")]
 pub async fn create_contact(
     _claims: Claims,
@@ -20,7 +37,18 @@ pub async fn create_contact(
     Ok(HttpResponse::Ok().body("Contact created successfully"))
 }
 
-// Read all contacts
+/// Handles reading all contacts from the database.
+///
+/// This endpoint is protected and requires a valid JWT.
+///
+/// # Arguments
+///
+/// * `_claims` - The claims extracted from the JWT, used for authentication.
+///
+/// # Returns
+///
+/// * `Ok(HttpResponse)` with a JSON array of contacts.
+/// * `Err(ApiError)` if there is a database error.
 #[get("/contacts")]
 pub async fn read_contacts(_claims: Claims) -> Result<HttpResponse, ApiError> {
     let mut conn = establish_connection()?;
@@ -35,7 +63,19 @@ pub async fn read_contacts(_claims: Claims) -> Result<HttpResponse, ApiError> {
     Ok(HttpResponse::Ok().json(contacts))
 }
 
-// Read a specific contact by ID
+/// Handles reading a specific contact by its ID.
+///
+/// This endpoint is protected and requires a valid JWT.
+///
+/// # Arguments
+///
+/// * `_claims` - The claims extracted from the JWT, used for authentication.
+/// * `id` - The ID of the contact to read, from the URL path.
+///
+/// # Returns
+///
+/// * `Ok(HttpResponse)` with the JSON data for the contact.
+/// * `Err(ApiError)` if the contact is not found or there is a database error.
 #[get("/contacts/{id}")]
 pub async fn read_contact(
     _claims: Claims,
@@ -50,7 +90,20 @@ pub async fn read_contact(
     Ok(HttpResponse::Ok().json(contact))
 }
 
-// Update a contact by ID
+/// Handles updating an existing contact by its ID.
+///
+/// This endpoint is protected and requires a valid JWT.
+///
+/// # Arguments
+///
+/// * `_claims` - The claims extracted from the JWT, used for authentication.
+/// * `id` - The ID of the contact to update, from the URL path.
+/// * `contact` - The updated contact data from the request body.
+///
+/// # Returns
+///
+/// * `Ok(HttpResponse)` with a success message if the contact is updated.
+/// * `Err(ApiError)` if the contact is not found or there is a database error.
 #[put("/contacts/{id}")]
 pub async fn update_contact(
     _claims: Claims,
@@ -66,7 +119,19 @@ pub async fn update_contact(
     Ok(HttpResponse::Ok().body("Contact updated successfully"))
 }
 
-// Delete a contact by ID
+/// Handles deleting a contact by its ID.
+///
+/// This endpoint is protected and requires a valid JWT.
+///
+/// # Arguments
+///
+/// * `_claims` - The claims extracted from the JWT, used for authentication.
+/// * `id` - The ID of the contact to delete, from the URL path.
+///
+/// # Returns
+///
+/// * `Ok(HttpResponse)` with a success message if the contact is deleted.
+/// * `Err(ApiError)` if the contact is not found or there is a database error.
 #[delete("/contacts/{id}")]
 pub async fn delete_contact(_claims: Claims, id: web::Path<i32>) -> Result<HttpResponse, ApiError> {
     let mut conn = establish_connection()?;

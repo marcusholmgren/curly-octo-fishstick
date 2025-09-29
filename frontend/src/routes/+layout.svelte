@@ -1,3 +1,9 @@
+<!--
+// frontend/src/routes/+layout.svelte
+// This is the root layout component for the entire application.
+// It defines the main structure, including the sidebar, header, and content area, and handles global session-related logic.
+// RELEVANT FILES: frontend/src/routes/+layout.server.ts, frontend/src/app.css
+-->
 <script lang="ts">
 	import '../app.css';
 	import '@tailwindplus/elements';
@@ -7,6 +13,11 @@
 
 	let { children } = $props();
 
+	/**
+	 * A Svelte 5 effect that runs when the session data changes.
+	 * If a 'RefreshAccessTokenError' occurs (e.g., the refresh token is expired),
+	 * it automatically triggers a new sign-in flow to re-authenticate the user.
+	 */
 	$effect(() => {
 		if ($page.data.session?.error === 'RefreshAccessTokenError') {
 			signIn('keycloak');

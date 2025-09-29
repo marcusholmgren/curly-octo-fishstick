@@ -1,10 +1,8 @@
 <!--
-// /frontend/src/lib/components/ContactsTable.svelte
-// This file contains the table of contacts.
-// This file exists to display the list of contacts and provide actions for each contact.
-// RELEVANT FILES:
-// - /frontend/src/routes/+page.svelte
-// - /frontend/src/lib/components/ContactForm.svelte
+// frontend/src/lib/components/ContactsTable.svelte
+// This component displays a table of contacts with options to edit or delete them.
+// It fetches the contact data from the API and handles the delete action.
+// RELEVANT FILES: /frontend/src/routes/contacts/+page.svelte, /frontend/src/lib/components/ContactForm.svelte
 -->
 <script lang="ts">
 	import '@tailwindplus/elements';
@@ -12,16 +10,31 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 
+	/**
+	 * Represents a single contact record.
+	 * @interface Contact
+	 */
 	interface Contact {
+		/** The unique ID of the contact. */
 		id: number;
+		/** The first name of the contact. */
 		first_name: string;
+		/** The last name of the contact. */
 		last_name: string;
+		/** The email address of the contact. */
 		email: string;
+		/** The phone number of the contact. */
 		phone_number: string;
 	}
 
 	let contacts: Contact[] = [];
 
+	/**
+	 * Fetches the list of contacts from the API.
+	 * It requires a valid access token from the session to authorize the request.
+	 * Updates the `contacts` array with the fetched data.
+	 * @async
+	 */
 	async function getContacts() {
 		try {
 			const session = $page.data.session;
