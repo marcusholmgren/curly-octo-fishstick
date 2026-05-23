@@ -6,10 +6,12 @@
 -->
 <script lang="ts">
 	import ContactsTable from '$lib/components/ContactsTable.svelte';
+
+	let { data } = $props();
 </script>
 
 <svelte:head>
 	<title>Contacts</title>
 </svelte:head>
 
-<ContactsTable />
+<ContactsTable contacts={data.contacts} />

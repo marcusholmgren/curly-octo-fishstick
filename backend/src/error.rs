@@ -15,6 +15,8 @@ pub enum ApiError {
     DatabaseError(DieselError),
     /// A connection error, wrapping `diesel::ConnectionError`.
     ConnectionError(ConnectionError),
+    /// A connection pool error, wrapping `diesel::r2d2::PoolError`.
+    PoolError(diesel::r2d2::PoolError),
     /// An error indicating that a requested resource was not found.
     NotFound,
 }
@@ -24,6 +26,7 @@ impl fmt::Display for ApiError {
         match self {
             ApiError::DatabaseError(e) => write!(f, "Database error: {}", e),
             ApiError::ConnectionError(e) => write!(f, "Connection error: {}", e),
+            ApiError::PoolError(e) => write!(f, "Connection pool error: {}", e),
             ApiError::NotFound => write!(f, "Not Found"),
         }
     }
@@ -37,7 +40,7 @@ impl ResponseError for ApiError {
     /// * An `HttpResponse` with an appropriate status code and message.
     fn error_response(&self) -> HttpResponse {
         match self {
-            ApiError::DatabaseError(_) | ApiError::ConnectionError(_) => {
+            ApiError::DatabaseError(_) | ApiError::ConnectionError(_) | ApiError::PoolError(_) => {
                 HttpResponse::InternalServerError().json("Internal Server Error")
             }
             ApiError::NotFound => HttpResponse::NotFound().json("Not Found"),
@@ -75,5 +78,20 @@ impl From<ConnectionError> for ApiError {
     /// * The corresponding `ApiError`.
     fn from(e: ConnectionError) -> Self {
         ApiError::ConnectionError(e)
+    }
+}
+
+impl From<diesel::r2d2::PoolError> for ApiError {
+    /// Converts a `diesel::r2d2::PoolError` into an `ApiError`.
+    ///
+    /// # Arguments
+    ///
+    /// * `e` - The `PoolError` to convert.
+    ///
+    /// # Returns
+    ///
+    /// * The corresponding `ApiError`.
+    fn from(e: diesel::r2d2::PoolError) -> Self {
+        ApiError::PoolError(e)
     }
 }

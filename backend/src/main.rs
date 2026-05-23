@@ -3,10 +3,9 @@
 // It sets up the database, runs migrations, and starts the HTTP server.
 // RELEVANT FILES: backend/src/handlers.rs, backend/src/auth.rs, backend/src/error.rs
 
-use actix_web::{web, App, HttpServer};
-use diesel::prelude::*;
+use actix_web::{App, HttpServer, web};
 use diesel::sqlite::SqliteConnection;
-use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use dotenvy::dotenv;
 use std::env;
 
@@ -17,7 +16,8 @@ pub mod models;
 pub mod schema;
 
 use crate::auth::TokenValidator;
-use crate::error::ApiError;
+
+pub type DbPool = diesel::r2d2::Pool<diesel::r2d2::ConnectionManager<SqliteConnection>>;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
 
@@ -38,26 +38,12 @@ fn run_migrations(
     Ok(())
 }
 
-/// Establishes a connection to the SQLite database.
-///
-/// It reads the `DATABASE_URL` from the environment variables (e.g., from a `.env` file).
-///
-/// # Returns
-///
-/// * `Ok(SqliteConnection)` if the connection is successful.
-/// * `Err(ApiError)` if the connection fails.
-fn establish_connection() -> Result<SqliteConnection, ApiError> {
-    dotenv().ok();
-    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
-    SqliteConnection::establish(&database_url).map_err(|e| ApiError::from(e))
-}
-
 use actix_cors::Cors;
 
 /// The main entry point for the Actix web server.
 ///
 /// This function performs the following steps:
-/// 1. Establishes a database connection.
+/// 1. Establishes a database connection pool.
 /// 2. Runs any pending database migrations.
 /// 3. Initializes the logger.
 /// 4. Reads Identity Provider (IDP) configuration from environment variables.
@@ -69,7 +55,17 @@ use actix_cors::Cors;
 /// * `std::io::Result<()>` which indicates if the server started successfully or not.
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    let mut conn = establish_connection().expect("Failed to connect to database");
+    dotenv().ok();
+    let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
+
+    let manager = diesel::r2d2::ConnectionManager::<SqliteConnection>::new(database_url);
+    let pool = diesel::r2d2::Pool::builder()
+        .build(manager)
+        .expect("Failed to create database connection pool");
+
+    let mut conn = pool
+        .get()
+        .expect("Failed to get connection from pool to run migrations");
     run_migrations(&mut conn).expect("Failed to run database migrations");
 
     if dotenvy::dotenv().is_err() {
@@ -83,6 +79,7 @@ async fn main() -> std::io::Result<()> {
         .expect("IDP_AUDIENCE environment variable must be set, e.g., in a .env file.");
 
     let validator = web::Data::new(TokenValidator::new(&idp_url, &idp_audience));
+    let db_pool = web::Data::new(pool.clone());
 
     HttpServer::new(move || {
         let cors = Cors::default()
@@ -99,6 +96,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .wrap(actix_web::middleware::Logger::default())
             .app_data(validator.clone())
+            .app_data(db_pool.clone())
             .service(
                 web::scope("/api")
                     .service(handlers::create_contact)

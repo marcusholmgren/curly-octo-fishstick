@@ -3,8 +3,8 @@
 // It fetches OIDC configuration and JWKS from an identity provider to validate tokens.
 // RELEVANT FILES: backend/src/main.rs, backend/src/handlers.rs
 
-use actix_web::{dev::Payload, web, Error as ActixWebError, FromRequest, HttpRequest};
-use jsonwebtoken::{decode, decode_header, DecodingKey, Validation};
+use actix_web::{Error as ActixWebError, FromRequest, HttpRequest, dev::Payload, web};
+use jsonwebtoken::{DecodingKey, Validation, decode, decode_header};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::future::Future;
@@ -70,6 +70,7 @@ pub struct JsonWebKey {
     /// The Key ID.
     pub kid: String,
     /// The algorithm used for the key (e.g., "RS256").
+    #[allow(dead_code)]
     pub alg: String,
     /// The modulus for an RSA public key.
     pub n: String,

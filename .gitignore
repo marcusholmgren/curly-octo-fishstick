@@ -25,3 +25,5 @@ target
 *.db
 *.db-journal
 *.log
+
+.antigravitycli

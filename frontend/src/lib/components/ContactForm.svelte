@@ -9,29 +9,32 @@
 	import { base } from '$app/paths';
 	import { page } from '$app/stores';
 
-	/**
-	 * The contact object to be edited or a default object for a new contact.
-	 * @type {{id?: number, first_name: string, last_name: string, email: string, phone_number: string}}
-	 */
-	export let contact: {
-		id?: number;
-		first_name: string;
-		last_name: string;
-		email: string;
-		phone_number: string;
-	} = {
-		first_name: '',
-		last_name: '',
-		email: '',
-		phone_number: ''
-	};
+	interface Props {
+		contact?: {
+			id?: number;
+			first_name: string;
+			last_name: string;
+			email: string;
+			phone_number: string;
+		};
+		method?: 'POST' | 'PUT';
+	}
 
-	/**
-	 * The HTTP method to use for the form submission.
-	 * 'POST' for creating a new contact, 'PUT' for updating an existing one.
-	 * @type {'POST' | 'PUT'}
-	 */
-	export let method: 'POST' | 'PUT' = 'POST';
+	let {
+		contact: initialContact = {
+			first_name: '',
+			last_name: '',
+			email: '',
+			phone_number: ''
+		},
+		method = 'POST'
+	}: Props = $props();
+
+	let contact = $state({ ...initialContact });
+
+	$effect(() => {
+		contact = { ...initialContact };
+	});
 
 	/**
 	 * Handles the form submission.
@@ -73,7 +76,7 @@
 	}
 </script>
 
-<form on:submit|preventDefault={handleSubmit}>
+<form onsubmit={(e) => { e.preventDefault(); handleSubmit(e); }}>
 	<div class="space-y-12">
 		<div class="border-b border-gray-900/10 pb-12 dark:border-white/10">
 			<div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">

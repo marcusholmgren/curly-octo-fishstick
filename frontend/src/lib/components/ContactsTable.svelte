@@ -7,7 +7,6 @@
 <script lang="ts">
 	import '@tailwindplus/elements';
 	import { resolve } from '$app/paths';
-	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 
 	/**
@@ -27,7 +26,16 @@
 		phone_number: string;
 	}
 
-	let contacts: Contact[] = [];
+	interface Props {
+		contacts?: Contact[];
+	}
+
+	let { contacts: initialContacts = [] }: Props = $props();
+	let contacts = $state(initialContacts);
+
+	$effect(() => {
+		contacts = initialContacts;
+	});
 
 	/**
 	 * Fetches the list of contacts from the API.
@@ -57,9 +65,7 @@
 		}
 	}
 
-	onMount(() => {
-		getContacts();
-	});
+
 </script>
 
 <div class="px-4 sm:px-6 lg:px-8">
@@ -184,7 +190,7 @@
 										>
 										<button
 											type="submit"
-											                                            on:click={async () => {
+											                                            onclick={async () => {
 											                                                const session = $page.data.session;
 											                                                if (!session?.accessToken) {
 											                                                    console.error('No access token found');

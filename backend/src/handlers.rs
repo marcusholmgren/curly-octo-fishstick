@@ -5,7 +5,7 @@
 
 use crate::auth::Claims;
 use crate::error::ApiError;
-use crate::establish_connection;
+use crate::DbPool;
 use crate::models::{Contact, NewContact};
 use actix_web::{delete, get, post, put, web, HttpResponse};
 use diesel::prelude::*;
@@ -26,9 +26,10 @@ use diesel::prelude::*;
 #[post("/contacts")]
 pub async fn create_contact(
     _claims: Claims,
+    pool: web::Data<DbPool>,
     contact: web::Json<NewContact>,
 ) -> Result<HttpResponse, ApiError> {
-    let mut conn = establish_connection()?;
+    let mut conn = pool.get()?;
 
     diesel::insert_into(crate::schema::contacts::table)
         .values(&contact.into_inner())
@@ -50,8 +51,11 @@ pub async fn create_contact(
 /// * `Ok(HttpResponse)` with a JSON array of contacts.
 /// * `Err(ApiError)` if there is a database error.
 #[get("/contacts")]
-pub async fn read_contacts(_claims: Claims) -> Result<HttpResponse, ApiError> {
-    let mut conn = establish_connection()?;
+pub async fn read_contacts(
+    _claims: Claims,
+    pool: web::Data<DbPool>,
+) -> Result<HttpResponse, ApiError> {
+    let mut conn = pool.get()?;
 
     let contacts = crate::schema::contacts::table
         .order((
@@ -79,9 +83,10 @@ pub async fn read_contacts(_claims: Claims) -> Result<HttpResponse, ApiError> {
 #[get("/contacts/{id}")]
 pub async fn read_contact(
     _claims: Claims,
+    pool: web::Data<DbPool>,
     id: web::Path<i32>,
 ) -> Result<HttpResponse, ApiError> {
-    let mut conn = establish_connection()?;
+    let mut conn = pool.get()?;
 
     let contact = crate::schema::contacts::table
         .find(id.into_inner())
@@ -107,10 +112,11 @@ pub async fn read_contact(
 #[put("/contacts/{id}")]
 pub async fn update_contact(
     _claims: Claims,
+    pool: web::Data<DbPool>,
     id: web::Path<i32>,
     contact: web::Json<NewContact>,
 ) -> Result<HttpResponse, ApiError> {
-    let mut conn = establish_connection()?;
+    let mut conn = pool.get()?;
 
     diesel::update(crate::schema::contacts::table.find(id.into_inner()))
         .set(contact.into_inner())
@@ -133,8 +139,12 @@ pub async fn update_contact(
 /// * `Ok(HttpResponse)` with a success message if the contact is deleted.
 /// * `Err(ApiError)` if the contact is not found or there is a database error.
 #[delete("/contacts/{id}")]
-pub async fn delete_contact(_claims: Claims, id: web::Path<i32>) -> Result<HttpResponse, ApiError> {
-    let mut conn = establish_connection()?;
+pub async fn delete_contact(
+    _claims: Claims,
+    pool: web::Data<DbPool>,
+    id: web::Path<i32>,
+) -> Result<HttpResponse, ApiError> {
+    let mut conn = pool.get()?;
 
     diesel::delete(crate::schema::contacts::table.find(id.into_inner())).execute(&mut conn)?;
 
