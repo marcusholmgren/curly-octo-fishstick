@@ -64,8 +64,6 @@
 			console.error('An error occurred while fetching contacts:', error);
 		}
 	}
-
-
 </script>
 
 <div class="px-4 sm:px-6 lg:px-8">
@@ -190,23 +188,24 @@
 										>
 										<button
 											type="submit"
-											                                            onclick={async () => {
-											                                                const session = $page.data.session;
-											                                                if (!session?.accessToken) {
-											                                                    console.error('No access token found');
-											                                                    return;
-											                                                }
-											                                                const response = await fetch(`/api/contacts/${contact.id}`, {
-											                                                    method: 'DELETE',
-											                                                    headers: {
-											                                                        Authorization: `Bearer ${session.accessToken}`
-											                                                    }
-											                                                });
-											                                                if (response.ok) {
-											                                                    getContacts();
-											                                                }
-											                                            }}>Delete</button
-											                                        >									</div>
+											onclick={async () => {
+												const session = $page.data.session;
+												if (!session?.accessToken) {
+													console.error('No access token found');
+													return;
+												}
+												const response = await fetch(`/api/contacts/${contact.id}`, {
+													method: 'DELETE',
+													headers: {
+														Authorization: `Bearer ${session.accessToken}`
+													}
+												});
+												if (response.ok) {
+													getContacts();
+												}
+											}}>Delete</button
+										>
+									</div>
 								</form>
 							</el-dialog-panel>
 						</dialog>

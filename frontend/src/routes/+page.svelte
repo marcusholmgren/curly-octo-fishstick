@@ -25,9 +25,7 @@
 	</div>
 {:else}
 	<p>
-		Welcome, {$page.data.session.user.name}. View your <a
-			href="/contacts"
-			class="text-indigo-600 hover:underline">contacts</a
-		>.
+		Welcome, {$page.data.session.user.name}. View your
+		<a href="/contacts" class="text-indigo-600 hover:underline">contacts</a>.
 	</p>
 {/if}
